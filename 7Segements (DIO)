@@ -1,0 +1,100 @@
+#ifndef F_CPU
+#define F_CPU 8000000UL
+#endif
+
+#include <avr/io.h>
+#include <util/delay.h>
+
+#define GETUNITS(number) (number % 10)
+#define GETTENTH(number) ((number / 10) % 10)
+
+static inline char generate7Segment(char number);
+void display7Segment(char number);
+void setOutputPort(char portName);
+void flashing(void);
+
+int main(void)
+{
+
+    setOutputPort('a');
+    setOutputPort('b');
+    setOutputPort('c');
+    unsigned char counter = 0;
+    while(1){
+      if (counter <= 99){
+        display7Segment(counter++);
+        flashing();
+      }else
+        counter = 0;
+    }
+    return 0;
+}
+
+static inline char generate7Segment(char number){
+  switch (number) {
+    case 0:
+      return 0b00111111;
+      break;
+    case 1:
+      return 0b00000110;
+      break;
+    case 2:
+      return 0b01011011;
+      break;
+    case 3:
+      return 0b01001111;
+      break;
+    case 4:
+      return 0b01100110;
+      break;
+    case 5:
+      return 0b01101101;
+      break;
+    case 6:
+      return 0b01111101;
+      break;
+    case 7:
+      return 0b00000111;
+      break;
+    case 8:
+      return 0b01111111;
+      break;
+    case 9:
+      return 0b01101111;
+      break;
+    default:
+      return 0x00;
+      break;
+  }
+}
+void display7Segment(char number){
+  PORTA = generate7Segment(GETUNITS(number));
+  PORTB = generate7Segment(GETTENTH(number));
+}
+void setOutputPort(char portName){
+  switch (portName) {
+    case 'A':
+    case 'a':
+      DDRA = 0xFF;
+      break;
+    case 'B':
+    case 'b':
+      DDRB = 0xFF;
+      break;
+    case 'C':
+    case 'c':
+      DDRC = 0xFF;
+      break;
+    case 'D':
+    case 'd':
+      DDRD = 0xFF;
+      break;
+    default:
+      break;
+  }
+}
+void flashing(void){
+  static char counter = 0;
+  PORTC = (0x01 << (counter++ % 8));
+  _delay_ms(1000);
+}
